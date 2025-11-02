@@ -4,14 +4,22 @@
 
 /* Minimal tokens using CSS variables */
 :root {
-  --bg: #f6f1eb;
-  --text: #2d2a27;
-  --accent: #b55c66;
+  --bg: #f2ecde;
+  --bg2: #e5dcc3;
+  --text: #343434;
+  --text2: #6c6a60;
+  --accent: #8a806f;
+  --accent2: #b4637a;
+  --Dtt: #7a6c4f;
 }
 html.dark {
-  --bg: #0f1115;
-  --text: #ffffff;
-  --accent: #b55c66;
+  --bg: #1f1f28;
+  --bg2: #2a2a37;
+  --text: #dcd7ba;
+  --text2: #c8c093;
+  --accent: #7e9cd8;
+  --accent2: #957fb8;
+  --Dtt: #e46876;
 }
 body {
   background: var(--bg);
