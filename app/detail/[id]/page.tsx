@@ -1,3 +1,4 @@
+// app/detail/[id]/page.tsx
 import { supabase } from "@/lib/supabaseClient";
 
 interface Props {
@@ -5,63 +6,67 @@ interface Props {
 }
 
 export default async function Detail({ params }: Props) {
-  const { data: items } = await supabase
+  // Trae el item y la info de su creator si tienes la relación adecuada
+  const { data: item, error } = await supabase
     .from("media_items")
-    .select("*, profiles(username,display_name)")
+    .select("*, profiles(username, display_name)")
     .eq("id", params.id)
-    .limit(1)
     .single();
 
-  if (!items) return <div>No encontrado</div>;
-  const m = items;
-  const publicURL = supabase.storage
+  if (error || !item) return <div>No encontrado</div>;
+
+  // getPublicUrl() devuelve { data: { publicUrl } }
+  const { data: urlData } = supabase.storage
     .from("media")
-    .getPublicUrl(m.file_path).publicURL;
+    .getPublicUrl(item.file_path);
+  const publicUrl = urlData?.publicUrl ?? "";
 
   return (
     <section>
-      <h1 className="text-2xl font-bold mb-2">{m.title}</h1>
+      <h1 className="text-2xl font-bold mb-2">{item.title}</h1>
       <p className="text-sm mb-4">
         Publicado por{" "}
-        <a href={`/vendor/${m.profiles?.username}`} className="underline">
-          @{m.profiles?.username}
+        <a href={`/vendor/${item.profiles?.username}`} className="underline">
+          @{item.profiles?.username}
         </a>
       </p>
 
       <div className="mb-4">
-        {m.type === "image" && (
+        {item.type === "image" && (
           <img
-            src={publicURL}
-            alt={m.title}
+            src={publicUrl}
+            alt={item.title}
             className="w-full max-h-[60vh] object-contain"
           />
         )}
-        {m.type === "video" && (
-          <video controls src={publicURL} className="w-full max-h-[60vh]" />
+        {item.type === "video" && (
+          <video controls src={publicUrl} className="w-full max-h-[60vh]" />
         )}
-        {m.type === "audio" && (
-          <audio controls src={publicURL} className="w-full" />
+        {item.type === "audio" && (
+          <audio controls src={publicUrl} className="w-full" />
         )}
-        {m.type === "model" && (
-          // model-viewer web component
+        {item.type === "model" && (
+          // model-viewer necesita cargarse client-side. Esto funciona si el webcomponent fue instalado.
+          // Si Next da warnings, carga model-viewer dinámicamente en cliente.
           // @ts-ignore
           <model-viewer
-            src={publicURL}
-            alt={m.title}
+            src={publicUrl}
+            alt={item.title}
             auto-rotate
             camera-controls
             style={{ width: "100%", height: "60vh" }}
           />
         )}
-        {m.type === "game" && (
+        {item.type === "game" && (
           <iframe
-            src={publicURL}
+            src={publicUrl}
             className="w-full h-[60vh]"
             sandbox="allow-scripts allow-same-origin"
           />
         )}
       </div>
-      <p>{m.description}</p>
+
+      <p>{item.description}</p>
     </section>
   );
 }
